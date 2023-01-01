@@ -1,0 +1,59 @@
+
+# 应用名称
+spring:
+  # 数据库驱动：
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ems?serverTimezone=Asia/Shanghai
+    type: com.alibaba.druid.pool.DruidDataSource
+    username: root
+    password: zfj@026418
+    # 以下是druid配置
+    druid:
+      initialSize: 5            # 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时
+      maxActive: 10             # 最大连接池数量
+      minIdle: 5                # 最小连接池数量
+      maxWait: 60000            # 从连接池中获取连接的最大等待时间，单位毫秒。默认-1,即不超时。配置了maxWait之后,缺省启用公平锁,并发效率会有所下降
+      validationQuery: select 1 # 验证sql是否可用,每中数据库的配置值都不同
+      testOnBorrow: false       # 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+      testOnReturn: false       # 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+      testWhileIdle: true       # 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+      timeBetweenEvictionRunsMillis: 60000 #单位毫秒
+      # 1.每隔指定时间，去检查连接池中的连接，如果是则关闭多余的连接，反之则新增连接;回收连接池泄露的连接
+      # 2.如果testOnBorrow==false并且testWhileIdle==true,则在应用获取连接的时候会判断连接的空闲时间是否大于timeBetweenEvictionRunsMillis，如果大于则会验证该连接是否有效。
+      # 配置 WebStatFilter，WebStatFilter 用于采集 web-jdbc 关联监控的数据：
+      web-stat-filter:
+        enabled: true           # 启用 WebStatFilter
+        url-pattern: "/*"
+        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+        session-stat-max-count: 1000  # 缺省 sessionStatMaxCount 是 1000 个，我们可以按需要进行配置
+      filters: stat,wall
+      # 监控统计配置
+      filter:
+        stat:
+          enabled: true           # 配置为true, 控制台的的sql监控才会正常监控
+          slow-sql-millis: 10000  # 超过该时间,就会被判定为慢sql,默认3s
+          log-slow-sql: true      # 输出慢sql
+          merge-sql: true         # 合并sql,  比如有多个select * from table where id = ? 会合并去重
+        wall:
+          config:
+            multi-statement-allow: true  # 可以一次执行多条sql【在mapper.xml使用foreach循环，多次执行该sql：比如循环删除】
+      # StatViewServlet 的配置
+      stat-view-servlet:
+        enabled: true           # 启用内置的监控页面
+        url-pattern: /druid/*   # 内置监控页面的地址
+        reset-enable: true      # 开启 Reset All 功能   reset-enable 属性即使设置为 false，重置按钮也会显示，只是点击该按钮并不会重置而已
+        login-username: javaboy # 设置登录用户名
+        login-password: 123     # 设置登录密码
+        # allow=127.0.0.1       # 白名单（如果allow没有配置或者为空，则允许所有访问）
+        # deny=                 # 黑名单（deny 优先于 allow，如果在 deny 列表中，就算在 allow 列表中，也会被拒绝）
+
+mybatis:
+  mapper-locations: classpath*:com/cyx/ems/**/*Mapper.xml
+  type-aliases-package: com.cyx.ems.**.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+pagehelper:
+  helperDialect: mysql                           #分页插件方言选择
+  reasonable: true                                #合理化参数，设为true时pageNum<=0 时会查第一页， pageNum>pages（超过总数时），会查询最后一页
+  supportMethodsArguments: true
